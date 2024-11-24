@@ -126,7 +126,7 @@ local function createNotificationGui()
 	local uiCorner3 = Instance.new("UICorner")
 	uiCorner3.CornerRadius = UDim.new(2, 10)  -- Adjust corner radius as needed
 	uiCorner3.Parent = minimizeButton3
-	
+
 	-- Minimize Button functionality
 	minimizeButton1.MouseButton1Click:Connect(function()
 		textBox1.Visible = not textBox1.Visible
@@ -169,15 +169,13 @@ end
 
 -- Function to create the BillboardGui above the part and show distance
 local function createBillboardGui(targetPart)
-	-- Remove existing BillboardGui if present to avoid duplicates
-	if billboardGui then billboardGui:Destroy() end
-
-	billboardGui = Instance.new("BillboardGui")
-	billboardGui.Adornee = targetPart
-	billboardGui.Parent = targetPart
-	billboardGui.Size = UDim2.new(0, 8, 0, 2)
-	billboardGui.StudsOffset = Vector3.new(-2, 3, 0) -- Position above the part
-	billboardGui.AlwaysOnTop = true
+	-- Create a new BillboardGui for each target part
+	local newBillboardGui = Instance.new("BillboardGui")
+	newBillboardGui.Adornee = targetPart
+	newBillboardGui.Parent = targetPart
+	newBillboardGui.Size = UDim2.new(0, 8, 0, 2)
+	newBillboardGui.StudsOffset = Vector3.new(-2, 3, 0) -- Position above the part
+	newBillboardGui.AlwaysOnTop = true
 
 	-- Create a TextLabel inside the BillboardGui
 	local guiLabel = Instance.new("TextLabel")
@@ -187,11 +185,11 @@ local function createBillboardGui(targetPart)
 	guiLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 	guiLabel.FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json")
 	guiLabel.TextScaled = true
-	guiLabel.Parent = billboardGui
+	guiLabel.Parent = newBillboardGui
 
 	-- Continuously update the distance
 	task.spawn(function()
-		while billboardGui and billboardGui.Parent do
+		while newBillboardGui and newBillboardGui.Parent do
 			local humRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 			if humRoot then
 				local distance = (humRoot.Position - targetPart.Position).Magnitude
@@ -203,6 +201,7 @@ local function createBillboardGui(targetPart)
 		end
 	end)
 end
+
 
 -- Function to calculate tween duration based on speed
 local function calculateTweenDuration(humRoot, targetModel)
@@ -224,25 +223,33 @@ local function tweenPlayerToTarget(targetModel)
 	tween:Play()
 end
 
--- Function to check for the target model and handle GUI visibility
+-- Function to check for target models and handle GUI visibility
 local function checkForModel()
-local targetObject = workspace:FindFirstDescendant(targetModelName)
+	-- Find all parts with the targetModelName in the workspace
+	local targetObjects = {}
+	for _, object in ipairs(workspace:GetChildren()) do
+		if object.Name == targetModelName then
+			table.insert(targetObjects, object)
+		end
+	end
 
-	if targetObject then
+	if #targetObjects > 0 then
 		-- Show both TextLabel and TextButton
 		if textLabel then
 			textLabel.Visible = true
-			textLabel.Text = "Found: " .. targetObject.Name  -- Update text with model's real name
-		minimizeButton3.Visible = true	
+			textLabel.Text = "Found " .. #targetObjects .. " targets"  -- Update text with the count of found parts
+			minimizeButton3.Visible = true
 		end
 		if textButton then
 			textButton.Visible = true
 		end
 
-		-- Create the BillboardGui for the target model
-		createBillboardGui(targetObject)
+		-- Create the BillboardGui for all the found target models
+		for _, targetObject in ipairs(targetObjects) do
+			createBillboardGui(targetObject)
+		end
 	else
-		-- If the target model is not found, update the TextLabel and hide the TeleportButton
+		-- If no target models are found
 		if textLabel then
 			textLabel.Visible = true
 			textLabel.Text = targetModelName .. " was not found!"
@@ -253,6 +260,7 @@ local targetObject = workspace:FindFirstDescendant(targetModelName)
 		end
 	end
 end
+
 
 -- Initial check
 createNotificationGui()
@@ -275,24 +283,22 @@ textBox2.FocusLost:Connect(function()
 	end
 end)
 
--- Connect the button click to teleport the player
 textButton.MouseButton1Click:Connect(function()
-	if workspace:FindFirstChild(targetModelName) then
-		tweenPlayerToTarget(workspace[targetModelName])
+	-- Find all the targets in the workspace with the target model name
+	local targetObjects = {}
+	for _, object in ipairs(workspace:GetChildren()) do
+		if object.Name == targetModelName then
+			table.insert(targetObjects, object)
+		end
+	end
+
+	if #targetObjects > 0 then
+		-- Loop through each target object and teleport the player to it
+		for _, targetObject in ipairs(targetObjects) do
+			tweenPlayerToTarget(targetObject)  -- Teleport the player to each target
+			wait(calculateTweenDuration(player.Character:WaitForChild("HumanoidRootPart"), targetObject))  -- Wait for the tween to finish
+		end
 	else
-		print("Target model does not exist in the workspace!")
-	end
-end)
-
--- Monitor changes in workspace
-workspace.ChildAdded:Connect(function(child)
-	if child.Name == targetModelName then
-		checkForModel()
-	end
-end)
-
-workspace.ChildRemoved:Connect(function(child)
-	if child.Name == targetModelName then
-		checkForModel()
+		print("Target models do not exist in the workspace!")
 	end
 end)
