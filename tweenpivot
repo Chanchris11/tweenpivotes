@@ -1,0 +1,298 @@
+-- Default values for target model name and tween speed
+local targetModelName = ""
+local tweenSpeed = 10 -- Default speed in studs per second
+
+-- Player's PlayerGui
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Variable to store the GUI elements
+local currentGui = nil
+local textLabel, textButton, textBox1, textBox2
+local minimizeButton1, minimizeButton2, minimizeButton3
+local billboardGui, part
+
+-- Function to create the GUI elements for the ScreenGui
+local function createNotificationGui()
+	-- Create a ScreenGui
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "NotificationGui"
+	screenGui.Parent = playerGui
+
+	-- Create the TextLabel (Initially hidden)
+	textLabel = Instance.new("TextLabel")
+	textLabel.Name = "NotificationLabel"
+	textLabel.Size = UDim2.new(0, 109, 0, 50)
+	textLabel.Position = UDim2.new(0.824, 0, 0.717, 0)
+	textLabel.BorderSizePixel = 4
+	textLabel.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	textLabel.FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json")
+	textLabel.Text = "!Perfect Crystal!"
+	textLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+	textLabel.TextScaled = true
+	textLabel.Visible = false  -- Initially hidden, will show when part is found
+	textLabel.Parent = screenGui
+
+	-- Create the TextButton (Initially hidden)
+	textButton = Instance.new("TextButton")
+	textButton.Name = "TeleportButton"
+	textButton.Size = UDim2.new(0, 109, 0, 50)
+	textButton.Position = UDim2.new(0.824, 0, 0.851, 0)
+	textButton.BorderSizePixel = 4
+	textButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+	textButton.FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json")
+	textButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+	textButton.Text = "!TELEPORT!"
+	textButton.TextScaled = true
+	textButton.Visible = false  -- Initially hidden, will show when the part appears
+	textButton.Parent = screenGui
+
+	-- Create TextBox 1 for setting the target part name
+	textBox1 = Instance.new("TextBox")
+	textBox1.Name = "TargetPartBox"
+	textBox1.Size = UDim2.new(0, 109, 0, 50)
+	textBox1.Position = UDim2.new(0.824, 0, 0.394, 0)
+	textBox1.BorderSizePixel = 4
+	textBox1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	textBox1.FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json")
+	textBox1.TextColor3 = Color3.fromRGB(139, 139, 139)
+	textBox1.Text = "Your Part Name"
+	textBox1.TextScaled = false
+	textBox1.Visible = true  -- Always visible
+	textBox1.Parent = screenGui
+
+	-- Create TextBox 2 for setting the tween speed
+	textBox2 = Instance.new("TextBox")
+	textBox2.Name = "TweenSpeedBox"
+	textBox2.Size = UDim2.new(0, 109, 0, 50)
+	textBox2.Position = UDim2.new(0.824, 0, 0.558, 0)
+	textBox2.BorderSizePixel = 4
+	textBox2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	textBox2.FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json")
+	textBox2.TextColor3 = Color3.fromRGB(139, 139, 139)
+	textBox2.Text = "TweenSpeed"
+	textBox2.TextScaled = false
+	textBox2.Visible = true  -- Always visible
+	textBox2.Parent = screenGui
+
+	-- Create minimize button 1 (for TextBox1)
+	minimizeButton1 = Instance.new("TextButton")
+	minimizeButton1.Name = "MinimizeButton1"
+	minimizeButton1.Size = UDim2.new(0, 38, 0, 36)
+	minimizeButton1.Position = UDim2.new(0.945, 0, 0.348, 0)
+	minimizeButton1.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	minimizeButton1.FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json")
+	minimizeButton1.TextColor3 = Color3.fromRGB(0, 0, 0)
+	minimizeButton1.Text = "-"
+	minimizeButton1.TextScaled = true
+	minimizeButton1.Parent = screenGui
+
+	-- Add UICorner to minimizeButton1
+	local uiCorner1 = Instance.new("UICorner")
+	uiCorner1.CornerRadius = UDim.new(2, 10)  -- Adjust corner radius as needed
+	uiCorner1.Parent = minimizeButton1
+
+	-- Create minimize button 2 (for TextBox2)
+	minimizeButton2 = Instance.new("TextButton")
+	minimizeButton2.Name = "MinimizeButton2"
+	minimizeButton2.Size = UDim2.new(0, 38, 0, 36)
+	minimizeButton2.Position = UDim2.new(0.945, 0, 0.528, 0)
+	minimizeButton2.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	minimizeButton2.FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json")
+	minimizeButton2.TextColor3 = Color3.fromRGB(0, 0, 0)
+	minimizeButton2.Text = "-"
+	minimizeButton2.TextScaled = true
+	minimizeButton2.Parent = screenGui
+
+	-- Add UICorner to minimizeButton2
+	local uiCorner2 = Instance.new("UICorner")
+	uiCorner2.CornerRadius = UDim.new(2, 10)  -- Adjust corner radius as needed
+	uiCorner2.Parent = minimizeButton2
+
+	-- Create minimize button 3 (for TextLabel)
+	minimizeButton3 = Instance.new("TextButton")
+	minimizeButton3.Name = "MinimizeButton3"
+	minimizeButton3.Size = UDim2.new(0, 38, 0, 36)
+	minimizeButton3.Position = UDim2.new(0.945, 0, 0.671, 0)
+	minimizeButton3.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	minimizeButton3.FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json")
+	minimizeButton3.TextColor3 = Color3.fromRGB(0, 0, 0)
+	minimizeButton3.Text = "-"
+	minimizeButton3.TextScaled = true
+	minimizeButton3.Parent = screenGui
+	minimizeButton3.Visible = false
+
+	-- Add UICorner to minimizeButton3
+	local uiCorner3 = Instance.new("UICorner")
+	uiCorner3.CornerRadius = UDim.new(2, 10)  -- Adjust corner radius as needed
+	uiCorner3.Parent = minimizeButton3
+	
+	-- Minimize Button functionality
+	minimizeButton1.MouseButton1Click:Connect(function()
+		textBox1.Visible = not textBox1.Visible
+		-- Change the minimizeButton background color based on visibility
+		if textBox1.Visible then
+			minimizeButton1.Text = "-"
+		else
+			minimizeButton1.Text = "+"
+		end
+		-- Update minimizeButton background color
+		minimizeButton1.BackgroundColor3 = textBox1.Visible and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
+	end)
+
+	minimizeButton2.MouseButton1Click:Connect(function()
+		textBox2.Visible = not textBox2.Visible
+		-- Change the minimizeButton background color based on visibility
+		if textBox2.Visible then
+			minimizeButton2.Text = "-"
+		else
+			minimizeButton2.Text = "+"
+		end
+		-- Update minimizeButton background color
+		minimizeButton2.BackgroundColor3 = textBox2.Visible and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
+	end)
+
+	minimizeButton3.MouseButton1Click:Connect(function()
+		textLabel.Visible = not textLabel.Visible
+		-- Change the minimizeButton background color based on visibility
+		if textLabel.Visible then
+			minimizeButton3.Text = "-"
+		else
+			minimizeButton3.Text = "+"
+		end
+		-- Update minimizeButton background color
+		minimizeButton3.BackgroundColor3 = textLabel.Visible and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
+	end)
+
+	return screenGui
+end
+
+-- Function to create the BillboardGui above the part and show distance
+local function createBillboardGui(targetPart)
+	-- Remove existing BillboardGui if present to avoid duplicates
+	if billboardGui then billboardGui:Destroy() end
+
+	billboardGui = Instance.new("BillboardGui")
+	billboardGui.Adornee = targetPart
+	billboardGui.Parent = targetPart
+	billboardGui.Size = UDim2.new(0, 8, 0, 2)
+	billboardGui.StudsOffset = Vector3.new(-2, 3, 0) -- Position above the part
+	billboardGui.AlwaysOnTop = true
+
+	-- Create a TextLabel inside the BillboardGui
+	local guiLabel = Instance.new("TextLabel")
+	guiLabel.Size = UDim2.new(10, 0, 10, 0)
+	guiLabel.BackgroundTransparency = 1
+	guiLabel.Text = targetPart.Name .. "\nDistance: Calculating..."
+	guiLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+	guiLabel.FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json")
+	guiLabel.TextScaled = true
+	guiLabel.Parent = billboardGui
+
+	-- Continuously update the distance
+	task.spawn(function()
+		while billboardGui and billboardGui.Parent do
+			local humRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+			if humRoot then
+				local distance = (humRoot.Position - targetPart.Position).Magnitude
+				guiLabel.Text = string.format("%s\nDistance: %.1f studs", targetPart.Name, distance)
+			else
+				guiLabel.Text = string.format("%s\nDistance: N/A", targetPart.Name)
+			end
+			task.wait(0.1) -- Update every 0.1 seconds
+		end
+	end)
+end
+
+-- Function to calculate tween duration based on speed
+local function calculateTweenDuration(humRoot, targetModel)
+	local distance = (humRoot.Position - targetModel:GetPivot().Position).Magnitude
+	return distance / tweenSpeed -- Duration = Distance / Speed
+end
+
+-- Function to tween the player to the target part
+local function tweenPlayerToTarget(targetModel)
+	local humRoot = player.Character and player.Character:WaitForChild("HumanoidRootPart")
+	if not humRoot then return end
+
+	local tweenService = game:GetService("TweenService")
+	local duration = calculateTweenDuration(humRoot, targetModel)
+	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	local goal = {CFrame = targetModel:GetPivot()}
+
+	local tween = tweenService:Create(humRoot, tweenInfo, goal)
+	tween:Play()
+end
+
+-- Function to check for the target model and handle GUI visibility
+local function checkForModel()
+	local targetModel = workspace:FindFirstChild(targetModelName)
+
+	if targetModel then
+		-- Show both TextLabel and TextButton
+		if textLabel then
+			textLabel.Visible = true
+			textLabel.Text = "Found: " .. targetModel.Name  -- Update text with model's real name
+		minimizeButton3.Visible = true	
+		end
+		if textButton then
+			textButton.Visible = true
+		end
+
+		-- Create the BillboardGui for the target model
+		createBillboardGui(targetModel)
+	else
+		-- If the target model is not found, update the TextLabel and hide the TeleportButton
+		if textLabel then
+			textLabel.Visible = true
+			textLabel.Text = targetModelName .. " was not found!"
+			minimizeButton3.Visible = true
+		end
+		if textButton then
+			textButton.Visible = false
+		end
+	end
+end
+
+-- Initial check
+createNotificationGui()
+
+-- Update target model name from TextBox1
+textBox1.FocusLost:Connect(function()
+	targetModelName = textBox1.Text
+	print("Target part updated to:", targetModelName)
+	checkForModel()  -- Check the model after updating the part name
+end)
+
+-- Update tween speed from TextBox2
+textBox2.FocusLost:Connect(function()
+	local speed = tonumber(textBox2.Text)
+	if speed and speed > 0 then
+		tweenSpeed = speed
+		print("Tween speed updated to:", tweenSpeed)
+	else
+		print("Invalid tween speed input")
+	end
+end)
+
+-- Connect the button click to teleport the player
+textButton.MouseButton1Click:Connect(function()
+	if workspace:FindFirstChild(targetModelName) then
+		tweenPlayerToTarget(workspace[targetModelName])
+	else
+		print("Target model does not exist in the workspace!")
+	end
+end)
+
+-- Monitor changes in workspace
+workspace.ChildAdded:Connect(function(child)
+	if child.Name == targetModelName then
+		checkForModel()
+	end
+end)
+
+workspace.ChildRemoved:Connect(function(child)
+	if child.Name == targetModelName then
+		checkForModel()
+	end
+end)
