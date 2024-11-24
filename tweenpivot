@@ -226,7 +226,7 @@ end
 
 -- Function to check for the target model and handle GUI visibility
 local function checkForModel()
-local targetObject = workspace:FindFirstChild(targetModelName) or workspace:FindFirstAncestorOfClass(targetModelName)
+local targetObject = workspace:FindFirstDescendant(targetModelName)
 
 	if targetObject then
 		-- Show both TextLabel and TextButton
