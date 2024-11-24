@@ -226,13 +226,13 @@ end
 
 -- Function to check for the target model and handle GUI visibility
 local function checkForModel()
-	local targetModel = workspace:FindFirstChild(targetModelName)
+local targetObject = workspace:FindFirstChild(targetModelName) or workspace:FindFirstAncestorOfClass(targetModelName)
 
-	if targetModel then
+	if targetObject then
 		-- Show both TextLabel and TextButton
 		if textLabel then
 			textLabel.Visible = true
-			textLabel.Text = "Found: " .. targetModel.Name  -- Update text with model's real name
+			textLabel.Text = "Found: " .. targetObject.Name  -- Update text with model's real name
 		minimizeButton3.Visible = true	
 		end
 		if textButton then
@@ -240,7 +240,7 @@ local function checkForModel()
 		end
 
 		-- Create the BillboardGui for the target model
-		createBillboardGui(targetModel)
+		createBillboardGui(targetObject)
 	else
 		-- If the target model is not found, update the TextLabel and hide the TeleportButton
 		if textLabel then
